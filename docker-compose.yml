@@ -1,0 +1,25 @@
+services:
+  kiwi:
+    restart: always
+    build: ./
+    ports:
+      - "3000:5000"
+
+  postgres:
+    container_name: postgres
+    image: postgres:13-alpine
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: thing
+      POSTGRES_USER: birdeye
+      POSTGRES_DB: birdeye
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "6060:8080"
+volumes:
+  pgdata:
