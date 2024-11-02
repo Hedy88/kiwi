@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const isValidUsername = (key: string) => !/[^a-z0-9_]/i.test(key);
 
-const REGISTER_SCHEMA = z.object({
+const SIGNUP_SCHEMA = z.object({
   username: z
     .string({ required_error: "An username is required." })
     .min(3, "Username must be above 3 characters")
@@ -22,4 +22,4 @@ const LOGIN_SCHEMA = z.object({
   password: z.string({ required_error: "A password is required." }),
 });
 
-export { REGISTER_SCHEMA, LOGIN_SCHEMA };
+export { SIGNUP_SCHEMA, LOGIN_SCHEMA };

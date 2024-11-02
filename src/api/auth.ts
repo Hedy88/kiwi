@@ -1,11 +1,12 @@
 import Router from "@koa/router";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 import pool from "../utils/db.js";
 import validateSchema from "../middleware/validate.js";
 import logger from "../utils/logger.js";
 
-import { REGISTER_SCHEMA } from "../utils/schemas.js";
+import { LOGIN_SCHEMA, SIGNUP_SCHEMA } from "../utils/schemas.js";
 import { generateId } from "../utils/snowflakes.js";
 
 const router = new Router({
@@ -52,7 +53,7 @@ const createUser = async (
   );
 };
 
-router.post("/signup", validateSchema(REGISTER_SCHEMA), async (ctx) => {
+router.post("/signup", validateSchema(SIGNUP_SCHEMA), async (ctx) => {
   let error: string;
   let username = ctx.request.body["username"];
   let email = ctx.request.body["email"];
@@ -84,11 +85,52 @@ router.post("/signup", validateSchema(REGISTER_SCHEMA), async (ctx) => {
 
     ctx.body = {
       status: "error",
-      message: error
-    }
+      message: error,
+    };
   }
 
   return;
+});
+
+router.post("/login", validateSchema(LOGIN_SCHEMA), async (ctx) => {
+  let error: string;
+  let username = ctx.request.body["username"];
+  let password = ctx.request.body["password"];
+
+  username = username.trim();
+  password = password.trim();
+
+  const user = await pool.query(
+    "SELECT id, password_hash, site_banned FROM users WHERE username = $1",
+    [username],
+  );
+
+  if (user.rowCount !== 0) {
+    const { id, password_hash, site_banned } = user.rows[0];
+    const comparePass = await bcrypt.compare(password, password_hash);
+
+    if (!site_banned) {
+      if (comparePass) {
+        const token = jwt.sign({ id }, process.env.SECRET, { expiresIn: "1d" });
+
+        ctx.body = {
+          status: "success",
+          token,
+        };
+
+        return;
+      } else error = "Invalid username / password.";
+    } else error = "This account has been banned from using Birdeye.";
+  } else error = "Invalid username / password.";
+
+  if (error) {
+    ctx.status = 400;
+
+    ctx.body = {
+      status: "error",
+      message: error,
+    };
+  }
 });
 
 export default router;
