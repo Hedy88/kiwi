@@ -22,7 +22,7 @@ const logger = winston.createLogger({
       return `[${timestamp}]: [${level.toUpperCase()}] - ${message} ${
         Object.keys(args).length ? JSON.stringify(args, null, 2) : ""
       }`;
-    })
+    }),
   ),
 });
 
