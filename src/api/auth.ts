@@ -18,9 +18,7 @@ const checkUsernameUsage = async (username: string) => {
     [username],
   );
 
-  logger.debug(`${query}`);
-
-  if (query.rows.length > 0) {
+  if (parseInt(query.rows[0].count) > 0) {
     return false;
   }
 
@@ -33,9 +31,7 @@ const checkEmailUsage = async (email: string) => {
     [email],
   );
 
-  logger.info(`sss ${JSON.stringify(query)}`);
-
-  if (query.rows[0].count > 0) {
+  if (parseInt(query.rows[0].count) > 0) {
     return false;
   }
 
