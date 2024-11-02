@@ -1,11 +1,12 @@
-/api/auth/login -> POST -> responds with the users token if login info is correct
-/api/auth/signup -> POST -> creates new account
+/api/auth/login -> POST -> responds with the users token if login info is correct (DONE tested)
+/api/auth/signup -> POST -> creates new account (DONE tested)
 /api/users/{user.name} -> GET -> get a users info 
-/api/users/@me -> GET -> gets current user (requires the Authentication header)
+/api/users/@me -> GET -> gets current user (DONE tested)
 /api/users/@me -> PATCH -> modifies current user
-/api/users/@me/subscriptions -> GET -> get current users subscriptions
-/api/users/@me/subscriptions/{community.name} -> PUT -> adds community to user's subscriptions
+/api/users/@me/subscriptions -> GET -> get current users subscriptions (DONE tested) 
+/api/users/@me/subscriptions/{community.name} -> PUT -> adds community to user's subscriptions (DONE not tested)
 /api/users/@me/subscriptions/{community.name} -> DELETE -> removes community to user's subscriptions
+/api/communities/ -> POST -> creates community
 /api/communities/{community.name} -> GET -> gets community data
 /api/communities/{community.name}/posts/{tab} -> GET -> gets posts for a community (tab is either "hot", "popular", "latest") 
 /api/communities/{community.name}/roles -> GET ->  gets community roles

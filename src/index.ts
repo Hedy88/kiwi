@@ -6,6 +6,7 @@ import logger from "./utils/logger.js";
 import pool from "./utils/db.js";
 
 import authRoutes from "./api/auth.js";
+import usersRoutes from "./api/users.js";
 
 const app = new Koa();
 
@@ -21,6 +22,7 @@ app.use(async (ctx, next) => {
 });
 
 app.use(authRoutes.routes());
+app.use(usersRoutes.routes());
 
 app.listen(process.env.PORT, () => {
   logger.info(`kiwi listening on port: ${process.env.PORT}`);
