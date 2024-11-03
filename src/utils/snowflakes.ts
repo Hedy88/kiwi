@@ -9,4 +9,4 @@ const generateId = (time: number = Date.now()) => {
     return snowflake.idFromTimestamp(time);
 };
 
-export { generateId };
+export { generateId, snowflake };

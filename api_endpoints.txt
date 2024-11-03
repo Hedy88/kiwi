@@ -8,13 +8,13 @@
 /api/users/@me/subscriptions/{community.name} -> DELETE -> removes community to user's subscriptions (DONE tested)
 /api/communities/ -> POST -> creates community (DONE tested)
 /api/communities/{community.name} -> GET -> gets community data (DONE tested)
-/api/communities/{community.name}/posts/{tab} -> GET -> gets posts for a community (tab is either "hot", "new") 
+/api/communities/{community.name}/posts/{tab} -> GET -> gets posts for a community (tab is either "hot", "new") (WIP)
 /api/communities/{community.name}/roles -> GET ->  gets community roles
 /api/communities/{community.name}/bans/{user.id} -> PUT -> bans user from community
 /api/communities/{community.name}/bans/{user.id} -> DELETE-> unbans user from community
 /api/communities/{community.name}/remove -> POST -> deletes community
-/api/communities/{community.name}/post -> POST -> posts a message into said community
-/api/communities/{community.name}/post -> DELETE -> deletes post
+/api/communities/{community.name}/post -> POST -> posts a message into said community (DONE tested)
+/api/communities/{community.name}/post -> DELETE -> deletes post 
 
 # kiwi will respond with this base JSON response
 {

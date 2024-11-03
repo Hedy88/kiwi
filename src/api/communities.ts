@@ -8,7 +8,7 @@ import {
   CREATE_COMMUNITY_SCHEMA,
   CREATE_POST_SCHEMA,
 } from "../utils/schemas.js";
-import { generateId } from "../utils/snowflakes.js";
+import { generateId, snowflake } from "../utils/snowflakes.js";
 import { Snowflake } from "nodejs-snowflake";
 
 const router = new Router({
@@ -120,16 +120,16 @@ router.get("/:name/posts/:catagory", async (ctx) => {
 
     if (communityQuery.rowCount > 0) {
       const posts = await pool.query(
-        "SELECT * FROM posts WHERE community = $1",
+        "SELECT id::text, author, title, content FROM posts WHERE community = $1 LIMIT 12",
         [communityQuery.rows[0].id],
       );
 
       if (ctx.params.catagory == "new") {
         posts.rows.sort((a, b) => {
-          const firstDate = Snowflake.timestampFromID(a.id, 1730486592);
-          const secondDate = Snowflake.timestampFromID(b.id, 1730486592);
+          const firstDate = Snowflake.timestampFromID(a.id, snowflake.customEpoch());
+          const secondDate = Snowflake.timestampFromID(b.id, snowflake.customEpoch());
 
-          return firstDate - secondDate;
+          return secondDate - firstDate;
         });
 
         ctx.body = {
