@@ -22,4 +22,26 @@ const LOGIN_SCHEMA = z.object({
   password: z.string({ required_error: "A password is required." }),
 });
 
-export { SIGNUP_SCHEMA, LOGIN_SCHEMA };
+const USER_UPDATE_SCHEMA = z.object({
+  username: z
+    .string()
+    .min(3, "Username must be above 3 characters")
+    .max(15, "Your username is too long!")
+    .refine(isValidUsername, { message: "Invalid username." })
+    .optional(),
+});
+
+const CREATE_COMMUNITY_SCHEMA = z.object({
+  name: z 
+    .string({ required_error: "A name is required." })
+    .min(3, "Community names must be above 3 characters")
+    .max(15, "Community names must be less then 15 characters")
+    // TODO: make a custom regex for this
+    .refine(isValidUsername, { message: "Invalid community name." }),
+  description: z 
+    .string()
+    .max(255, "Community descriptions must be less then 255 characters")
+    .optional(),
+})
+
+export { SIGNUP_SCHEMA, LOGIN_SCHEMA, USER_UPDATE_SCHEMA, CREATE_COMMUNITY_SCHEMA };
