@@ -32,16 +32,33 @@ const USER_UPDATE_SCHEMA = z.object({
 });
 
 const CREATE_COMMUNITY_SCHEMA = z.object({
-  name: z 
+  name: z
     .string({ required_error: "A name is required." })
     .min(3, "Community names must be above 3 characters")
     .max(15, "Community names must be less then 15 characters")
     // TODO: make a custom regex for this
     .refine(isValidUsername, { message: "Invalid community name." }),
-  description: z 
+  description: z
     .string()
     .max(255, "Community descriptions must be less then 255 characters")
     .optional(),
-})
+});
 
-export { SIGNUP_SCHEMA, LOGIN_SCHEMA, USER_UPDATE_SCHEMA, CREATE_COMMUNITY_SCHEMA };
+const CREATE_POST_SCHEMA = z.object({
+  content: z
+    .string({ required_error: "Every post must have content." })
+    .min(3, "Content must be above 3 characters")
+    .max(255, "Content must be less then 255 characters"),
+  title: z
+    .string({ required_error: "A title is required" })
+    .min(1, "Title must be above 1 characters")
+    .max(20, "Title must be less then 20 characters"),
+});
+
+export {
+  SIGNUP_SCHEMA,
+  LOGIN_SCHEMA,
+  USER_UPDATE_SCHEMA,
+  CREATE_COMMUNITY_SCHEMA,
+  CREATE_POST_SCHEMA
+};
