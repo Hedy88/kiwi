@@ -9,6 +9,7 @@ import {
   CREATE_POST_SCHEMA,
 } from "../utils/schemas.js";
 import { generateId, snowflake } from "../utils/snowflakes.js";
+import { wilsonScore } from "../utils/algorithms.js";
 import { Snowflake } from "nodejs-snowflake";
 
 const router = new Router({
@@ -119,15 +120,21 @@ router.get("/:name/posts/:catagory", async (ctx) => {
     );
 
     if (communityQuery.rowCount > 0) {
-      const posts = await pool.query(
-        "SELECT id::text, author, title, content FROM posts WHERE community = $1 LIMIT 12",
-        [communityQuery.rows[0].id],
-      );
-
       if (ctx.params.catagory == "new") {
+        const posts = await pool.query(
+          "SELECT id, author, title, content FROM posts WHERE community = $1 LIMIT 12",
+          [communityQuery.rows[0].id],
+        );
+
         posts.rows.sort((a, b) => {
-          const firstDate = Snowflake.timestampFromID(a.id, snowflake.customEpoch());
-          const secondDate = Snowflake.timestampFromID(b.id, snowflake.customEpoch());
+          const firstDate = Snowflake.timestampFromID(
+            a.id,
+            snowflake.customEpoch(),
+          );
+          const secondDate = Snowflake.timestampFromID(
+            b.id,
+            snowflake.customEpoch(),
+          );
 
           return secondDate - firstDate;
         });
@@ -135,14 +142,87 @@ router.get("/:name/posts/:catagory", async (ctx) => {
         ctx.body = {
           status: "success",
           posts: [
-            ...posts.rows.map((post) => {
-              return {
-                id: post.id,
-                author: post.author,
-                title: post.title,
-                content: post.content,
-              };
-            }),
+            ...(await Promise.all(
+              posts.rows.map(async (post) => {
+                const post_votes = await pool.query(
+                  "SELECT voter::text, vote_type FROM post_votes WHERE post_id = $1",
+                  [post.id],
+                );
+
+                return {
+                  id: post.id,
+                  author: post.author,
+                  title: post.title,
+                  content: post.content,
+                  votes: [
+                    ...post_votes.rows.map((vote) => {
+                      return {
+                        voter: vote.voter,
+                        vote_type: vote.vote_type,
+                      };
+                    }),
+                  ],
+                };
+              }),
+            )),
+          ],
+        };
+
+        return;
+      } else if (ctx.params.catagory == "popular") {
+        const posts = await pool.query(
+          `
+          SELECT 
+            p.id,
+            p.author,
+            p.title,
+            p.content,
+            COALESCE(SUM(CASE WHEN v.vote_type = 0 THEN 1 ELSE 0 END), 0) AS upvotes,
+            COALESCE(SUM(CASE WHEN v.vote_type = 1 THEN 1 ELSE 0 END), 0) AS downvotes
+          FROM 
+            posts p
+          LEFT JOIN 
+            post_votes v ON p.id = v.post_id AND p.community = $1
+          GROUP BY 
+            p.id
+          LIMIT 12
+          `,
+          [communityQuery.rows[0].id],
+        );
+
+        posts.rows.sort((a, b) => {
+          return (
+            wilsonScore(b.upvotes, b.downvotes) -
+            wilsonScore(a.upvotes, a.downvotes)
+          );
+        });
+
+        ctx.body = {
+          status: "success",
+          posts: [
+            ...(await Promise.all(
+              posts.rows.map(async (post) => {
+                const post_votes = await pool.query(
+                  "SELECT voter::text, vote_type FROM post_votes WHERE post_id = $1",
+                  [post.id],
+                );
+
+                return {
+                  id: post.id,
+                  author: post.author,
+                  title: post.title,
+                  content: post.content,
+                  votes: [
+                    ...post_votes.rows.map((vote) => {
+                      return {
+                        voter: vote.voter,
+                        vote_type: vote.vote_type,
+                      };
+                    }),
+                  ],
+                };
+              }),
+            )),
           ],
         };
 
@@ -185,7 +265,7 @@ router.post(
 
       await pool.query(
         "INSERT INTO post_votes (post_id, voter, vote_type) VALUES ($1, $2, $3)",
-        [id, ctx.state.user.id, 0]
+        [id, ctx.state.user.id, 0],
       );
 
       ctx.body = {
@@ -197,7 +277,7 @@ router.post(
 
     if (error) {
       ctx.status = 400;
-  
+
       ctx.body = {
         status: "error",
         message: error,
